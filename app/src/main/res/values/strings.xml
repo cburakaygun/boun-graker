@@ -1,3 +1,42 @@
 <resources>
     <string name="app_name">BOUN GraKer</string>
+
+
+    // SHARED PREFERENCES
+    <string name="SHAR_PREF_USER_DATA">com.cburakaygun.boungraker.USER_DATA</string>
+    <string name="SHAR_PREF_USER_DATA_ID_KEY">STU_ID</string>
+    <string name="SHAR_PREF_USER_DATA_PW_KEY">STU_PW</string>
+
+
+    // INTENTS
+    <string name="INTENT_LOGIN_ID_KEY">@string/SHAR_PREF_USER_DATA_ID_KEY</string>
+    <string name="INTENT_LOGIN_PW_KEY">@string/SHAR_PREF_USER_DATA_PW_KEY</string>
+
+    <string name="INTENT_LOGIN_STATUS">com.cburakaygun.boungraker.INTENT_LOGIN_STATUS</string>
+    <string name="INTENT_LOGIN_STATUS_KEY">0</string>
+    <string name="INTENT_LOGIN_STATUS_VAL_SUCCESS">1</string>
+    <string name="INTENT_LOGIN_STATUS_VAL_FAIL">2</string>
+
+
+    // MENU
+    <string name="MENU_LOGIN">Login</string>
+    <string name="MENU_LOGOUT">Logout</string>
+
+
+    // MAIN ACTIVITY
+    <string name="MAIN_TEXT_NEED_TO_LOGIN">YOU\nNEED\nTO\nLOGIN\n\n(Menu > Login)</string>
+    <string name="MAIN_TEXT_GRADES_WILL_APPEAR">YOUR\nGRADES\nWILL\nAPPEAR\nHERE</string>
+
+
+    // LOGIN ACTIVITY
+    <string name="LOGIN_STU_ID_EDITTEXT_HINT">Student ID</string>
+    <string name="LOGIN_STU_PW_EDITTEXT_HINT">Password</string>
+    <string name="LOGIN_BUTTON_TEXT">LOGIN</string>
+
+    <string name="LOGIN_INFO_SUCCESS">SUCCESS</string>
+    <string name="LOGIN_INFO_FAIL">FAILED\n\nPlease check your credentials and try again.</string>
+    <string name="LOGIN_INFO_ERR_NO_INTERNET">Check your Internet connection.</string>
+    <string name="LOGIN_INFO_ERR_ID_BLANK">Student ID cannot be blank.</string>
+    <string name="LOGIN_INFO_ERR_PW_BLANK">Password cannot be blank.</string>
+    <string name="LOGIN_INFO_PLEASE_WAIT">… PLEASE WAIT …</string>
 </resources>

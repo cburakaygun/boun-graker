@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <include layout="@layout/toolbar_layout"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content" />
+
+    <ScrollView android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp">
+
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+
+            <EditText tools:ignore="Autofill"
+                      android:id="@+id/login_stu_id_edittext"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginBottom="10dp"
+                      android:hint="@string/LOGIN_STU_ID_EDITTEXT_HINT"
+                      android:inputType="number"
+                      android:textSize="18sp" />
+
+            <EditText tools:ignore="Autofill"
+                      android:id="@+id/login_stu_pw_edittext"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:inputType="textPassword"
+                      android:hint="@string/LOGIN_STU_PW_EDITTEXT_HINT"
+                      android:ems="10"
+                      android:layout_marginBottom="10dp" />
+
+            <Button android:id="@+id/login_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="loginButtonOnClick"
+                    android:text="@string/LOGIN_BUTTON_TEXT"
+                    android:textStyle="bold"
+                    android:typeface="monospace" />
+
+            <TextView android:id="@+id/login_info_textview"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:layout_marginTop="20dp"
+                      android:textAlignment="center"
+                      android:textColor="#006699"
+                      android:textStyle="bold" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
