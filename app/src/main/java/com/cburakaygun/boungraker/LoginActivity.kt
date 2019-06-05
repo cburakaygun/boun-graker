@@ -1,13 +1,13 @@
 package com.cburakaygun.boungraker
 
 import android.content.*
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.content.LocalBroadcastManager
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.cburakaygun.boungraker.helpers.isNetworkConnected
 
 

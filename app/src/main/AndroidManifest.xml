@@ -25,10 +25,10 @@
         <activity android:name=".LoginActivity"
                   android:launchMode="singleTask" />
 
-        <service
-                android:name=".LoginService"
-                android:exported="false">
+        <service android:name=".LoginService"
+                 android:exported="false">
         </service>
+
     </application>
 
 </manifest>

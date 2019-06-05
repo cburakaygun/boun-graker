@@ -2,7 +2,7 @@ package com.cburakaygun.boungraker
 
 import android.app.IntentService
 import android.content.Intent
-import android.support.v4.content.LocalBroadcastManager
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.cburakaygun.boungraker.helpers.bounLogin
 import org.jsoup.Connection
 
