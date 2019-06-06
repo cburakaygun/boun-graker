@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.cburakaygun.boungraker.helpers.Constants
 import com.cburakaygun.boungraker.helpers.isNetworkConnected
 
 
@@ -31,13 +32,13 @@ class LoginActivity : AppCompatActivity() {
         loginButton = findViewById(R.id.login_button)
         loginInfoTextView = findViewById(R.id.login_info_textview)
 
-        userDataSharPref = getSharedPreferences(getString(R.string.SHAR_PREF_USER_DATA) , Context.MODE_PRIVATE)
+        userDataSharPref = getSharedPreferences(Constants.SHAR_PREF_USER_DATA , Context.MODE_PRIVATE)
 
         if (savedInstanceState != null) {
             onRestoreInstanceState(savedInstanceState)
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(LoginStatusReceiver(), IntentFilter(getString(R.string.INTENT_LOGIN_STATUS)))
+        LocalBroadcastManager.getInstance(this).registerReceiver(LoginStatusReceiver(), IntentFilter(Constants.INTENT_LOGIN_STATUS))
     }
 
 
@@ -84,8 +85,8 @@ class LoginActivity : AppCompatActivity() {
             loginInfoTextView.text = getString(R.string.LOGIN_INFO_PLEASE_WAIT)
 
             val intent = Intent(this, LoginService::class.java)
-            intent.putExtra(getString(R.string.INTENT_LOGIN_ID_KEY), stuID)
-            intent.putExtra(getString(R.string.INTENT_LOGIN_PW_KEY), stuPW)
+            intent.putExtra(Constants.INTENT_LOGIN_ID_KEY, stuID)
+            intent.putExtra(Constants.INTENT_LOGIN_PW_KEY, stuPW)
             startService(intent)
         }
     }
@@ -93,13 +94,13 @@ class LoginActivity : AppCompatActivity() {
 
     private inner class LoginStatusReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
-            val status = intent.extras?.getString(getString(R.string.INTENT_LOGIN_STATUS_KEY)) ?: return
+            val loginSuccessful = intent.extras?.getBoolean(Constants.INTENT_LOGIN_STATUS_KEY) ?: return
 
-            if (status == getString(R.string.INTENT_LOGIN_STATUS_VAL_SUCCESS)){
+            if (loginSuccessful) {
                 loginInfoTextView.text = getString(R.string.LOGIN_INFO_SUCCESS)
 
-                userDataSharPref.edit().putString(getString(R.string.SHAR_PREF_USER_DATA_ID_KEY), idEditText.text.toString()).
-                    putString(getString(R.string.SHAR_PREF_USER_DATA_PW_KEY), pwEditText.text.toString()).apply()
+                userDataSharPref.edit().putString(Constants.SHAR_PREF_USER_DATA_ID_KEY, idEditText.text.toString()).
+                    putString(Constants.SHAR_PREF_USER_DATA_PW_KEY, pwEditText.text.toString()).apply()
 
                 finish()
 

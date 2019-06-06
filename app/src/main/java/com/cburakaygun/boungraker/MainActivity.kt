@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Spinner
 import android.widget.TextView
+import com.cburakaygun.boungraker.helpers.Constants
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         mainTextView = findViewById(R.id.main_textview)
         workingStatTextView = findViewById(R.id.working_stat_textview)
 
-        userDataSharPref = getSharedPreferences(getString(R.string.SHAR_PREF_USER_DATA), Context.MODE_PRIVATE)
+        userDataSharPref = getSharedPreferences(Constants.SHAR_PREF_USER_DATA, Context.MODE_PRIVATE)
 
         if (!userLoggedIn()) {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -77,19 +78,19 @@ class MainActivity : AppCompatActivity() {
 
 
     fun userLoggedIn() =
-        !(userDataSharPref.getString(getString(R.string.SHAR_PREF_USER_DATA_ID_KEY), "").isNullOrEmpty())
+        !(userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "").isNullOrEmpty())
 
 
     fun logUserOut() {
-        userDataSharPref.edit().putString(getString(R.string.SHAR_PREF_USER_DATA_ID_KEY), "")
-            .putString(getString(R.string.SHAR_PREF_USER_DATA_PW_KEY), "")
+        userDataSharPref.edit().putString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "")
+            .putString(Constants.SHAR_PREF_USER_DATA_PW_KEY, "")
             .apply()
         loginInfoChanged()
     }
 
 
     fun loginInfoChanged() {
-        val stuID = userDataSharPref.getString(getString(R.string.SHAR_PREF_USER_DATA_ID_KEY),"")
+        val stuID = userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "")
 
         if (stuID.isNullOrEmpty()) {
             stuIDTextView.text = ""

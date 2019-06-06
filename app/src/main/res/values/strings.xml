@@ -2,22 +2,6 @@
     <string name="app_name">BOUN GraKer</string>
 
 
-    // SHARED PREFERENCES
-    <string name="SHAR_PREF_USER_DATA">com.cburakaygun.boungraker.USER_DATA</string>
-    <string name="SHAR_PREF_USER_DATA_ID_KEY">STU_ID</string>
-    <string name="SHAR_PREF_USER_DATA_PW_KEY">STU_PW</string>
-
-
-    // INTENTS
-    <string name="INTENT_LOGIN_ID_KEY">@string/SHAR_PREF_USER_DATA_ID_KEY</string>
-    <string name="INTENT_LOGIN_PW_KEY">@string/SHAR_PREF_USER_DATA_PW_KEY</string>
-
-    <string name="INTENT_LOGIN_STATUS">com.cburakaygun.boungraker.INTENT_LOGIN_STATUS</string>
-    <string name="INTENT_LOGIN_STATUS_KEY">0</string>
-    <string name="INTENT_LOGIN_STATUS_VAL_SUCCESS">1</string>
-    <string name="INTENT_LOGIN_STATUS_VAL_FAIL">2</string>
-
-
     // MENU
     <string name="MENU_LOGIN">Login</string>
     <string name="MENU_LOGOUT">Logout</string>
