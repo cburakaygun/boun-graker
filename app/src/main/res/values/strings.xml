@@ -8,8 +8,13 @@
 
 
     // MAIN ACTIVITY
-    <string name="MAIN_TEXT_NEED_TO_LOGIN">YOU\nNEED\nTO\nLOGIN\n\n(Menu > Login)</string>
+    <string name="MAIN_TEXT_NEED_TO_LOGIN">YOU\nNEED TO\nLOGIN\n\n(Menu > Login)</string>
     <string name="MAIN_TEXT_GRADES_WILL_APPEAR">YOUR\nGRADES\nWILL\nAPPEAR\nHERE</string>
+    <string name="MAIN_TEXT_TERM_INFO_FAIL">AN ERROR\nOCCURRED\nWHILE\nRETRIEVING\nTERM INFO</string>
+    <string name="MAIN_TEXT_GRADES">%s\n%s</string>
+    <string name="MAIN_LAST_CHECK_TEXT">Last Check: %s</string>
+    <string name="MAIN_TERM_UPDATE_BUTTON_TEXT_UPDATE">Update Now</string>
+    <string name="MAIN_TERM_UPDATE_BUTTON_TEXT_UPDATING">Updating…</string>
 
 
     // LOGIN ACTIVITY
@@ -17,10 +22,12 @@
     <string name="LOGIN_STU_PW_EDITTEXT_HINT">Password</string>
     <string name="LOGIN_BUTTON_TEXT">LOGIN</string>
 
-    <string name="LOGIN_INFO_SUCCESS">SUCCESS</string>
-    <string name="LOGIN_INFO_FAIL">FAILED\n\nPlease check your credentials and try again.</string>
     <string name="LOGIN_INFO_ERR_NO_INTERNET">Check your Internet connection.</string>
     <string name="LOGIN_INFO_ERR_ID_BLANK">Student ID cannot be blank.</string>
     <string name="LOGIN_INFO_ERR_PW_BLANK">Password cannot be blank.</string>
     <string name="LOGIN_INFO_PLEASE_WAIT">… PLEASE WAIT …</string>
+    <string name="LOGIN_INFO_LOGIN_FAIL">Login FAILED!\n\nPlease check your credentials and internet connection.</string>
+    <string name="LOGIN_INFO_TERMS_INFO_FAIL">Retrieving terms info FAILED!</string>
+    <string name="LOGIN_INFO_SUCCESS">SUCCESS</string>
+
 </resources>

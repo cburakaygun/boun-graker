@@ -1,15 +1,16 @@
 package com.cburakaygun.boungraker
 
 import android.content.*
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.cburakaygun.boungraker.helpers.Constants
 import com.cburakaygun.boungraker.helpers.isNetworkConnected
+import com.cburakaygun.boungraker.services.LoginService
 
 
 class LoginActivity : AppCompatActivity() {
@@ -38,13 +39,14 @@ class LoginActivity : AppCompatActivity() {
             onRestoreInstanceState(savedInstanceState)
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(LoginStatusReceiver(), IntentFilter(Constants.INTENT_LOGIN_STATUS))
+        LocalBroadcastManager.getInstance(this).registerReceiver(LoginResultReceiver(),
+            IntentFilter(Constants.INTENT_LOGIN_RESULT))
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(LoginStatusReceiver())
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(LoginResultReceiver())
     }
 
 
@@ -92,25 +94,25 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
-    private inner class LoginStatusReceiver: BroadcastReceiver() {
+    private inner class LoginResultReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
-            val loginSuccessful = intent.extras?.getBoolean(Constants.INTENT_LOGIN_STATUS_KEY) ?: return
 
-            if (loginSuccessful) {
-                loginInfoTextView.text = getString(R.string.LOGIN_INFO_SUCCESS)
-
-                userDataSharPref.edit().putString(Constants.SHAR_PREF_USER_DATA_ID_KEY, idEditText.text.toString()).
-                    putString(Constants.SHAR_PREF_USER_DATA_PW_KEY, pwEditText.text.toString()).apply()
-
-                finish()
-
-            } else {
-                loginInfoTextView.text = getString(R.string.LOGIN_INFO_FAIL)
-
-                loginButton.isEnabled = true
-                idEditText.isEnabled = true
-                pwEditText.isEnabled = true
+            when(intent.extras?.getInt(Constants.INTENT_LOGIN_RESULT_KEY)) {
+                Constants.INTENT_LOGIN_RESULT_VAL_LOGIN_FAIL -> {
+                    loginInfoTextView.text = getString(R.string.LOGIN_INFO_LOGIN_FAIL)
+                }
+                Constants.INTENT_LOGIN_RESULT_VAL_TERMS_INFO_FAIL -> {
+                    loginInfoTextView.text = getString(R.string.LOGIN_INFO_TERMS_INFO_FAIL)
+                }
+                else -> {
+                    loginInfoTextView.text = getString(R.string.LOGIN_INFO_SUCCESS)
+                    finish()
+                }
             }
+
+            loginButton.isEnabled = true
+            idEditText.isEnabled = true
+            pwEditText.isEnabled = true
         }
     }
 
