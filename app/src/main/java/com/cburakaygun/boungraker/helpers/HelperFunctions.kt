@@ -1,55 +1,60 @@
 package com.cburakaygun.boungraker.helpers
 
+import android.app.Notification
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.cburakaygun.boungraker.MainActivity
+import com.cburakaygun.boungraker.R
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
+import java.util.*
+import kotlin.collections.HashMap
 
 
-object Constants {
-    const val APP_PACKAGE_NAME = "com.cburakaygun.boungraker"
+fun issueNotification(appContext: Context, channelID: String, notifID: Int, title: String, text: String) {
+    val intent = Intent(appContext, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val pIndent: PendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0)
 
-    // BOUN REGISTRATION LINKS
-    const val BOUN_LOGIN_URL = "https://registration.boun.edu.tr/buis/Login.aspx"
-    const val BOUN_GRADES_URL = "https://registration.boun.edu.tr/buis/students/academicyeargrades.aspx"
+    val builder = NotificationCompat.Builder(appContext, channelID)
+        .setSmallIcon(R.drawable.ic_launcher_background)
+        .setContentIntent(pIndent)
+        .setContentTitle(title)
+        .setContentText(text)
+        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+        .setAutoCancel(true)
+        .setDefaults(Notification.DEFAULT_ALL)
+        .setOnlyAlertOnce(true)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setShowWhen(true)
+        .setWhen(Calendar.getInstance().timeInMillis)
 
-    // SHARED PREFERENCES
-    const val SHAR_PREF_USER_DATA = "$APP_PACKAGE_NAME.USER_DATA"
-    const val SHAR_PREF_USER_DATA_ID_KEY = "STU_ID"
-    const val SHAR_PREF_USER_DATA_PW_KEY = "STU_PW"
-
-    const val SHAR_PREF_TERMS_DATA = "$APP_PACKAGE_NAME.TERMS_DATA"
-
-    const val COURSE_GRADE_DELIMITER = "!" // <course>!<grade>
-    const val COURSE_GRADE_PAIR_DELIMITER = "$" // <course1>!<grade1>$<course2>!<grade2>$...
-
-    // WORKERS
-    const val WORKER_TERM_INFO_ID_KEY = SHAR_PREF_USER_DATA_ID_KEY
-    const val WORKER_TERM_INFO_PW_KEY = SHAR_PREF_USER_DATA_PW_KEY
-    const val WORKER_TERM_INFO_TERM_KEY = "TERM"
-
-    // INTENTS
-    const val INTENT_LOGIN_ID_KEY = SHAR_PREF_USER_DATA_ID_KEY
-    const val INTENT_LOGIN_PW_KEY = SHAR_PREF_USER_DATA_PW_KEY
-
-    const val INTENT_LOGIN_RESULT = "$APP_PACKAGE_NAME.INTENT_LOGIN_RESULT"
-    const val INTENT_LOGIN_RESULT_KEY = "INTENT_LOGIN_RESULT_KEY"
-    const val INTENT_LOGIN_RESULT_VAL_SUCCESS = 0
-    const val INTENT_LOGIN_RESULT_VAL_LOGIN_FAIL = 1
-    const val INTENT_LOGIN_RESULT_VAL_TERMS_INFO_FAIL = 2
+    NotificationManagerCompat.from(appContext).notify(notifID, builder.build())
 }
 
 
-fun isNetworkConnected(context: Context): Boolean {
+/**
+ * Return true if device is connected to a network.
+ * Otherwise, returns false.
+ */
+fun isNetworkConnected(appContext: Context): Boolean {
     val activeNetworkInfo: NetworkInfo? =
-        (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
+        (appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
 
     return (activeNetworkInfo != null && activeNetworkInfo.isConnected)
 }
 
 
+/**
+ * Logs in to BUIS and returns a HashMap of cookies to be used to browse other web pages.
+ */
 fun bounLogin(stuID: String, stuPW: String): HashMap<String, String>? {
     try {
         // Connects to the login page to get some required POST parameters
@@ -106,6 +111,9 @@ fun bounLogin(stuID: String, stuPW: String): HashMap<String, String>? {
 }
 
 
+/**
+ * Returns HTTP response of BUIS grades web page.
+ */
 private fun bounGetGradesPage(loginCookies: Map<String, String>?): Connection.Response {
     return Jsoup.connect(Constants.BOUN_GRADES_URL)
         .method(Connection.Method.GET)
@@ -116,7 +124,9 @@ private fun bounGetGradesPage(loginCookies: Map<String, String>?): Connection.Re
 }
 
 
-// Returns a List of Strings where each element is a term, e.g. 2018/2019-2
+/**
+ * Returns a List of Strings where each element is a term, e.g. 2018/2019-2
+ */
 fun bounTermsInfo(loginCookies: Map<String, String>?): List<String>? {
     try {
         val httpResponse = bounGetGradesPage(loginCookies)
@@ -137,7 +147,9 @@ fun bounTermsInfo(loginCookies: Map<String, String>?): List<String>? {
 }
 
 
-// Returns a HashMap which maps courses (and SPA & GPA) to the corresponding grades for given `term`
+/**
+ * Returns a HashMap which maps courses (and SPA & GPA) to the corresponding grades for given `term`
+ */
 fun bounTermInfo(loginCookies: Map<String, String>?, term: String): HashMap<String, String>? {
     try {
         var httpResponse = bounGetGradesPage(loginCookies)
@@ -173,7 +185,8 @@ fun bounTermInfo(loginCookies: Map<String, String>?, term: String): HashMap<Stri
         for (gradesTableTr in gradesTableTrs) {
             val gradesTableTrTds = gradesTableTr.select("td")
             val course = gradesTableTrTds[0].ownText().split(".")[0].replace("\\s+".toRegex(), "")
-            val grade = gradesTableTrTds[3].ownText()
+            var grade = gradesTableTrTds[3].ownText()
+            if (grade.isNullOrEmpty()) grade = "??"
             result[course] = grade
         }
 

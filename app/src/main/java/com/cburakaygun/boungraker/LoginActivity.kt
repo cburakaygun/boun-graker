@@ -26,7 +26,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        setSupportActionBar(findViewById(R.id.main_toolbar))
+        setSupportActionBar(findViewById(R.id.login_toolbar))
 
         idEditText = findViewById(R.id.login_stu_id_edittext)
         pwEditText = findViewById(R.id.login_stu_pw_edittext)
@@ -40,7 +40,8 @@ class LoginActivity : AppCompatActivity() {
         }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(LoginResultReceiver(),
-            IntentFilter(Constants.INTENT_LOGIN_RESULT))
+            IntentFilter(Constants.INTENT_LOGIN_RESULT)
+        )
     }
 
 
@@ -50,11 +51,14 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
-    override fun onSaveInstanceState(outState: Bundle?) {
-        outState?.putString("LOGIN_INFO_TEXT_SAVED" , loginInfoTextView.text.toString())
-        outState?.putString("ID_TEXT_SAVED" , idEditText.text.toString())
-        outState?.putString("PW_TEXT_SAVED" , pwEditText.text.toString())
-        super.onSaveInstanceState(outState)
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run {
+            putString("LOGIN_INFO_TEXT_SAVED" , loginInfoTextView.text.toString())
+            putString("ID_TEXT_SAVED" , idEditText.text.toString())
+            putString("PW_TEXT_SAVED" , pwEditText.text.toString())
+
+            super.onSaveInstanceState(this)
+        }
     }
 
 

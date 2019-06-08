@@ -30,4 +30,10 @@
     <string name="LOGIN_INFO_TERMS_INFO_FAIL">Retrieving terms info FAILED!</string>
     <string name="LOGIN_INFO_SUCCESS">SUCCESS</string>
 
+
+    // NOTIFICATIONS
+    <string name="NOTIFICATION_CHANNEL_NEW_GRADES_NAME">New Grades</string>
+    <string name="NOTIFICATION_CHANNEL_NEW_GRADES_DESC">Show a notification when new grade(s) are discovered for the last term.</string>
+    <string name="NOTIFICATION_NEW_GRADES_TITLE">NEW GRADE(S)</string>
+
 </resources>
