@@ -4,51 +4,106 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.preference.PreferenceManager
+import androidx.work.*
 import com.cburakaygun.boungraker.MainActivity
 import com.cburakaygun.boungraker.R
+import com.cburakaygun.boungraker.workers.TermInfoWorker
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.HashMap
 
 
 fun issueNotification(appContext: Context, channelID: String, notifID: Int, title: String, text: String) {
-    val intent = Intent(appContext, MainActivity::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-    }
-    val pIndent: PendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0)
+    val pIndent: PendingIntent =
+        PendingIntent.getActivity(appContext, 0, Intent(appContext, MainActivity::class.java), 0)
 
-    val builder = NotificationCompat.Builder(appContext, channelID)
-        .setSmallIcon(R.drawable.ic_launcher_background)
-        .setContentIntent(pIndent)
-        .setContentTitle(title)
-        .setContentText(text)
-        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-        .setAutoCancel(true)
-        .setDefaults(Notification.DEFAULT_ALL)
-        .setOnlyAlertOnce(true)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setShowWhen(true)
-        .setWhen(Calendar.getInstance().timeInMillis)
+    val builder = NotificationCompat.Builder(appContext, channelID).apply {
+        setSmallIcon(R.drawable.ic_launcher_background)
+        setContentIntent(pIndent)
+        setContentTitle(title)
+        setContentText(text)
+        setStyle(NotificationCompat.BigTextStyle().bigText(text))
+        setAutoCancel(true)
+        setDefaults(Notification.DEFAULT_ALL)
+        setOnlyAlertOnce(true)
+        priority = NotificationCompat.PRIORITY_DEFAULT
+        setShowWhen(true)
+        setWhen(Calendar.getInstance().timeInMillis)
+    }
 
     NotificationManagerCompat.from(appContext).notify(notifID, builder.build())
 }
 
 
+fun createTermInfoWorkRequest(userDataSharPref: SharedPreferences, term: String, periodic: Boolean): WorkRequest {
+    val stuID = userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "")
+    val stuPW = userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_PW_KEY, "")
+
+    val termInfoWorkInputData = Data.Builder().run {
+        putString(Constants.WORKER_TERM_INFO_ID_KEY, stuID)
+        putString(Constants.WORKER_TERM_INFO_PW_KEY, stuPW)
+        putString(Constants.WORKER_TERM_INFO_TERM_KEY, term)
+        putBoolean(Constants.WORKER_TERM_INFO_PERIODIC_KEY, periodic)
+        build()
+    }
+
+    val workRequestBuilder =
+        if (periodic) {
+            PeriodicWorkRequestBuilder<TermInfoWorker>(20, TimeUnit.MINUTES)
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+        } else {
+            OneTimeWorkRequestBuilder<TermInfoWorker>()
+        }
+
+    return workRequestBuilder.setInputData(termInfoWorkInputData).build()
+}
+
+
+fun schedulePeriodicWorker(userDataSharPref: SharedPreferences?, termsDataSharPref: SharedPreferences?) {
+    if (userDataSharPref == null || termsDataSharPref == null) return
+
+    val lastTerm = termsDataSharPref.all.keys.sortedDescending().first()
+    val termInfoWorkRequest = createTermInfoWorkRequest(userDataSharPref, lastTerm, true)
+
+    WorkManager.getInstance().enqueueUniquePeriodicWork(
+        Constants.WORKER_TERM_INFO_PERIODIC_UNIQUE_NAME,
+        ExistingPeriodicWorkPolicy.REPLACE,
+        termInfoWorkRequest as PeriodicWorkRequest
+    )
+}
+
+
+fun cancelPeriodicWorker() = WorkManager.getInstance().cancelUniqueWork(Constants.WORKER_TERM_INFO_PERIODIC_UNIQUE_NAME)
+
+
 /**
- * Return true if device is connected to a network.
+ * Returns true if device is connected to a network.
  * Otherwise, returns false.
  */
-fun isNetworkConnected(appContext: Context): Boolean {
+fun isNetworkConnected(appContext: Context?): Boolean {
     val activeNetworkInfo: NetworkInfo? =
-        (appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
+        (appContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
 
     return (activeNetworkInfo != null && activeNetworkInfo.isConnected)
+}
+
+
+/**
+ * Returns true if background SYNC service is enabled in Settings.
+ * Otherwise, returns false.
+ */
+fun isSyncEnabled(appContext: Context?): Boolean {
+    return PreferenceManager.getDefaultSharedPreferences(appContext)
+        .getBoolean(appContext?.getString(R.string.SETTINGS_SYNC_SWITCH_KEY), false)
 }
 
 

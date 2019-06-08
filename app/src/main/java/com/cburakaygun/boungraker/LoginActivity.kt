@@ -8,8 +8,11 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.cburakaygun.boungraker.helpers.Constants
 import com.cburakaygun.boungraker.helpers.isNetworkConnected
+import com.cburakaygun.boungraker.helpers.isSyncEnabled
+import com.cburakaygun.boungraker.helpers.schedulePeriodicWorker
 import com.cburakaygun.boungraker.services.LoginService
 
 
@@ -21,6 +24,8 @@ class LoginActivity : AppCompatActivity() {
     lateinit var loginInfoTextView: TextView
 
     lateinit var userDataSharPref: SharedPreferences
+
+    lateinit var loginResultReceiver: BroadcastReceiver
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,15 +44,17 @@ class LoginActivity : AppCompatActivity() {
             onRestoreInstanceState(savedInstanceState)
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(LoginResultReceiver(),
-            IntentFilter(Constants.INTENT_LOGIN_RESULT)
-        )
+        loginResultReceiver = LoginResultReceiver().also {
+            LocalBroadcastManager.getInstance(this)
+                .registerReceiver(it, IntentFilter(Constants.INTENT_LOGIN_RESULT)
+                )
+        }
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(LoginResultReceiver())
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(loginResultReceiver)
     }
 
 
@@ -64,9 +71,12 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
         super.onRestoreInstanceState(savedInstanceState)
-        loginInfoTextView.text = savedInstanceState?.getString("LOGIN_INFO_TEXT_SAVED")
-        idEditText.setText(savedInstanceState?.getString("ID_TEXT_SAVED") , TextView.BufferType.EDITABLE)
-        pwEditText.setText(savedInstanceState?.getString("PW_TEXT_SAVED") , TextView.BufferType.EDITABLE)
+
+        savedInstanceState?.run {
+            loginInfoTextView.text = getString("LOGIN_INFO_TEXT_SAVED")
+            idEditText.setText(getString("ID_TEXT_SAVED"), TextView.BufferType.EDITABLE)
+            pwEditText.setText(getString("PW_TEXT_SAVED"), TextView.BufferType.EDITABLE)
+        }
     }
 
 
@@ -90,26 +100,41 @@ class LoginActivity : AppCompatActivity() {
 
             loginInfoTextView.text = getString(R.string.LOGIN_INFO_PLEASE_WAIT)
 
-            val intent = Intent(this, LoginService::class.java)
-            intent.putExtra(Constants.INTENT_LOGIN_ID_KEY, stuID)
-            intent.putExtra(Constants.INTENT_LOGIN_PW_KEY, stuPW)
-            startService(intent)
+            val loginServiceIntent = Intent(this, LoginService::class.java).apply {
+                putExtra(Constants.INTENT_LOGIN_ID_KEY, stuID)
+                putExtra(Constants.INTENT_LOGIN_PW_KEY, stuPW)
+            }
+            startService(loginServiceIntent)
         }
     }
 
 
+    private fun loadMainActivity() =
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        })
+
+
     private inner class LoginResultReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
-
-            when(intent.extras?.getInt(Constants.INTENT_LOGIN_RESULT_KEY)) {
+            when (intent.extras?.getInt(Constants.INTENT_LOGIN_RESULT_KEY)) {
                 Constants.INTENT_LOGIN_RESULT_VAL_LOGIN_FAIL -> {
                     loginInfoTextView.text = getString(R.string.LOGIN_INFO_LOGIN_FAIL)
                 }
+
                 Constants.INTENT_LOGIN_RESULT_VAL_TERMS_INFO_FAIL -> {
                     loginInfoTextView.text = getString(R.string.LOGIN_INFO_TERMS_INFO_FAIL)
                 }
+
                 else -> {
                     loginInfoTextView.text = getString(R.string.LOGIN_INFO_SUCCESS)
+
+                    if (isSyncEnabled(context)) {
+                        schedulePeriodicWorker(userDataSharPref,
+                            context?.getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE))
+                    }
+
+                    loadMainActivity()
                     finish()
                 }
             }

@@ -1,23 +1,29 @@
 <resources>
     <string name="app_name">BOUN GraKer</string>
+    <string name="ACTIVITY_SETTINGS_NAME">Settings</string>
+
+    // DEVELOPER EMAIL
+    <string name="EMAIL_OF_DEVELOPER">cburakaygun@gmail.com</string>
+    <string name="EMAIL_TO_DEVELOPER">mailto:cburakaygun@gmail.com</string>
 
 
     // MENU
-    <string name="MENU_LOGIN">Login</string>
-    <string name="MENU_LOGOUT">Logout</string>
+    <string name="MENU_SETTINGS">Settings</string>
+    <string name="MENU_LOGOUT">Log out</string>
 
 
     // MAIN ACTIVITY
-    <string name="MAIN_TEXT_NEED_TO_LOGIN">YOU\nNEED TO\nLOGIN\n\n(Menu > Login)</string>
     <string name="MAIN_TEXT_GRADES_WILL_APPEAR">YOUR\nGRADES\nWILL\nAPPEAR\nHERE</string>
     <string name="MAIN_TEXT_TERM_INFO_FAIL">AN ERROR\nOCCURRED\nWHILE\nRETRIEVING\nTERM INFO</string>
     <string name="MAIN_TEXT_GRADES">%s\n%s</string>
     <string name="MAIN_LAST_CHECK_TEXT">Last Check: %s</string>
     <string name="MAIN_TERM_UPDATE_BUTTON_TEXT_UPDATE">Update Now</string>
     <string name="MAIN_TERM_UPDATE_BUTTON_TEXT_UPDATING">Updating…</string>
+    <string name="MAIN_SYNC_STATUS_TEXT">Background SYNC service is %s.</string>
 
 
     // LOGIN ACTIVITY
+    <string name="LOGIN_INFO_TEXT">You need to log in with your BUIS/ÖBİKAS credentials.</string>
     <string name="LOGIN_STU_ID_EDITTEXT_HINT">Student ID</string>
     <string name="LOGIN_STU_PW_EDITTEXT_HINT">Password</string>
     <string name="LOGIN_BUTTON_TEXT">LOGIN</string>
@@ -26,14 +32,39 @@
     <string name="LOGIN_INFO_ERR_ID_BLANK">Student ID cannot be blank.</string>
     <string name="LOGIN_INFO_ERR_PW_BLANK">Password cannot be blank.</string>
     <string name="LOGIN_INFO_PLEASE_WAIT">… PLEASE WAIT …</string>
-    <string name="LOGIN_INFO_LOGIN_FAIL">Login FAILED!\n\nPlease check your credentials and internet connection.</string>
+    <string name="LOGIN_INFO_LOGIN_FAIL">Login FAILED!\n\nPlease check your credentials and internet connection.
+    </string>
     <string name="LOGIN_INFO_TERMS_INFO_FAIL">Retrieving terms info FAILED!</string>
     <string name="LOGIN_INFO_SUCCESS">SUCCESS</string>
 
 
     // NOTIFICATIONS
     <string name="NOTIFICATION_CHANNEL_NEW_GRADES_NAME">New Grades</string>
-    <string name="NOTIFICATION_CHANNEL_NEW_GRADES_DESC">Show a notification when new grade(s) are discovered for the last term.</string>
-    <string name="NOTIFICATION_NEW_GRADES_TITLE">NEW GRADE(S)</string>
+    <string name="NOTIFICATION_CHANNEL_NEW_GRADES_DESC">Show a notification when new grade(s) are discovered for the
+        last term.
+    </string>
+    <string name="NOTIFICATION_NEW_GRADES_TITLE">NEW GRADES</string>
+
+
+    // PREFERENCES BEGIN //
+
+    // GENERAL CATEGORY
+    <string name="SETTINGS_CATEGORY_SYNC">SYNC</string>
+
+    // Background Sync Switch
+    <string name="SETTINGS_SYNC_SWITCH_KEY">SETTINGS_SYNC_SWITCH_KEY</string>
+    <string name="SETTINGS_SYNC_SWITCH_TITLE">BACKGROUND SYNC SERVICE</string>
+    <string name="SETTINGS_SYNC_SWITCH_SUMMARY">Check for new grades for the last term at about every 20 minutes\n
+        (A notification is shown when new grades are discovered)
+    </string>
+
+    // CONTACT CATEGORY
+    <string name="SETTINGS_CATEGORY_CONTACT">CONTACT</string>
+
+    // Contact Preference
+    <string name="SETTINGS_CONTACT_PREFERENCE_TITLE">CEMAL BURAK AYGÜN</string>
+    <string name="SETTINGS_CONTACT_PREFERENCE_SUMMARY">@string/EMAIL_OF_DEVELOPER</string>
+
+    // PREFERENCES END //
 
 </resources>

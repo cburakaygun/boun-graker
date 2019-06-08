@@ -53,6 +53,7 @@
 
             <TextView
                     android:id="@+id/login_info_textview"
+                    android:text="@string/LOGIN_INFO_TEXT"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="20dp"

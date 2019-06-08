@@ -9,6 +9,14 @@ import com.cburakaygun.boungraker.helpers.bounLogin
 import com.cburakaygun.boungraker.helpers.bounTermsInfo
 
 
+/**
+ * This service is responsible for logging the user in and retrieving the list of terms from the server.
+ * Expects the following input data:
+ *   - <Student ID>: String
+ *   - <Student Password>: String
+ *
+ * If successful, user credentials and terms are saved to local (SharedPreferences).
+ */
 class LoginService : IntentService("LoginService") {
 
     override fun onHandleIntent(intent: Intent?) {

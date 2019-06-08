@@ -3,9 +3,10 @@ package com.cburakaygun.boungraker
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.*
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -14,10 +15,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.work.*
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.cburakaygun.boungraker.helpers.Constants
-import com.cburakaygun.boungraker.workers.TermInfoWorker
-import java.util.concurrent.TimeUnit
+import com.cburakaygun.boungraker.helpers.cancelPeriodicWorker
+import com.cburakaygun.boungraker.helpers.createTermInfoWorkRequest
+import com.cburakaygun.boungraker.helpers.isSyncEnabled
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,16 +30,32 @@ class MainActivity : AppCompatActivity() {
     lateinit var mainTextView: TextView
     lateinit var lastCheckTextView: TextView
     lateinit var termUpdateButton: Button
+    lateinit var syncStatusTextView: TextView
 
     lateinit var userDataSharPref: SharedPreferences
     lateinit var termsDataSharPref: SharedPreferences
 
+    val newGradesReceiver: BroadcastReceiver = NewGradesReceiver()
+
+    var termsSpinnerItemSelectedBySystem = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        userDataSharPref = getSharedPreferences(Constants.SHAR_PREF_USER_DATA, Context.MODE_PRIVATE)
+        termsDataSharPref = getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE)
+
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
+
+        if (!isUserLoggedIn()) {
+            loadLoginActivity()
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.main_toolbar))
-
         createNotificationChannel()
 
         stuIDTextView = findViewById(R.id.stu_id_textview)
@@ -44,49 +63,30 @@ class MainActivity : AppCompatActivity() {
         mainTextView = findViewById(R.id.main_textview)
         lastCheckTextView = findViewById(R.id.last_check_textview)
         termUpdateButton = findViewById(R.id.term_update_button)
+        syncStatusTextView = findViewById(R.id.sync_status_textview)
 
-        userDataSharPref = getSharedPreferences(Constants.SHAR_PREF_USER_DATA, Context.MODE_PRIVATE)
-        termsDataSharPref = getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE)
-
-        if (!isUserLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-        }
-
-        termsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                displayTermInfo()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
+        stuIDTextView.text = userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "")
+        setUpTermsSpinner()
     }
 
+    // All the lifecycle methods except `onCreate` and `onDestroy` are meant to be executed only when the user is logged in.
 
     override fun onStart() {
         super.onStart()
-        LocalBroadcastManager.getInstance(this).
-            registerReceiver(NewGradesReceiver(), IntentFilter(Constants.INTENT_NEW_GRADES))
-
-        if (isUserLoggedIn()) {
-            val termInfoWorkRequest = createTermInfoWorkRequest(getLastTerm(), true)
-
-            WorkManager.getInstance().enqueueUniquePeriodicWork(
-                Constants.WORKER_TERM_INFO_PERIODIC_UNIQUE_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
-                termInfoWorkRequest as PeriodicWorkRequest
-            )
-        }
+        updateSyncStatusText()
+        LocalBroadcastManager.getInstance(this).registerReceiver(newGradesReceiver, IntentFilter(Constants.INTENT_NEW_GRADES))
     }
 
 
     override fun onResume() {
         super.onResume()
-        updateUI()
+        displayTermInfo()
     }
 
 
     override fun onStop() {
         super.onStop()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(NewGradesReceiver())
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(newGradesReceiver)
     }
 
 
@@ -96,18 +96,18 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        menu?.findItem(R.id.login_menu)?.title = if (isUserLoggedIn()) getString(R.string.MENU_LOGOUT) else getString(R.string.MENU_LOGIN)
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when(item?.itemId){
-            R.id.login_menu -> {
-                if (isUserLoggedIn()) logUserOut() else startActivity(Intent(this, LoginActivity::class.java))
+            R.id.menu_logout -> {
+                logUserOut()
                 true
             }
+
+            R.id.menu_settings -> {
+                startActivity(Intent(this , SettingsActivity::class.java))
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -117,57 +117,47 @@ class MainActivity : AppCompatActivity() {
         !(userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "").isNullOrEmpty())
 
 
+    private fun loadLoginActivity() =
+        startActivity(Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        })
+
+
     private fun logUserOut() {
         userDataSharPref.edit().clear().apply()
         termsDataSharPref.edit().clear().apply()
 
         NotificationManagerCompat.from(this).cancel(Constants.NOTIFICATION_NEW_GRADES_ID)
-        WorkManager.getInstance().cancelUniqueWork(Constants.WORKER_TERM_INFO_PERIODIC_UNIQUE_NAME)
+        cancelPeriodicWorker()
 
-        updateUI()
+        loadLoginActivity()
+        finish()
     }
 
 
-    /**
-     * Updates UI according to the login status of the user.
-     */
-    private fun updateUI() {
-        if (isUserLoggedIn()) {
-            stuIDTextView.text = userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, "")
-            termUpdateButton.visibility = View.VISIBLE
+    private fun setUpTermsSpinner() {
+        termsSpinnerItemSelectedBySystem = true
 
-            if (termsSpinner.adapter == null) {
-                termsSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-                    termsDataSharPref.all.keys.sortedDescending()).apply {
-                    setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        termsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (termsSpinnerItemSelectedBySystem) {
+                    termsSpinnerItemSelectedBySystem = false
+                } else {
+                    displayTermInfo()
                 }
             }
-            termsSpinner.visibility = View.VISIBLE
-
-        } else {
-            stuIDTextView.text = ""
-            mainTextView.text = getString(R.string.MAIN_TEXT_NEED_TO_LOGIN)
-            lastCheckTextView.text = ""
-            termUpdateButton.visibility = View.INVISIBLE
-
-            termsSpinner.adapter = null
-            termsSpinner.visibility = View.INVISIBLE
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        invalidateOptionsMenu()
+        termsSpinner.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+            termsDataSharPref.all.keys.sortedDescending()).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
     }
 
 
     /**
-     * Returns the most recent term.
-     */
-    private fun getLastTerm(): String {
-        return termsDataSharPref.all.keys.sortedDescending().first()
-    }
-
-
-    /**
-     * Displays term info stored in Shared Preferences on the UI.
+     * Displays term info stored in SharedPreferences on the UI.
      */
     private fun displayTermInfo() {
         val selectedTerm = termsSpinner.selectedItem ?: return
@@ -213,11 +203,12 @@ class MainActivity : AppCompatActivity() {
 
         val selectedTerm: String = termsSpinner.selectedItem.toString()
 
-        val termInfoWorkRequest = createTermInfoWorkRequest(selectedTerm, false)
+        val termInfoWorkRequest = createTermInfoWorkRequest(userDataSharPref, selectedTerm, false)
 
         WorkManager.getInstance().getWorkInfoByIdLiveData(termInfoWorkRequest.id).observe(this,
             Observer { workInfo ->
-                if (workInfo != null && (workInfo.state == WorkInfo.State.SUCCEEDED || workInfo.state == WorkInfo.State.FAILED)) {
+                if (workInfo != null &&
+                    (workInfo.state == WorkInfo.State.SUCCEEDED || workInfo.state == WorkInfo.State.FAILED)) {
                     termUpdateButton.text = getString(R.string.MAIN_TERM_UPDATE_BUTTON_TEXT_UPDATE)
                     termUpdateButton.isEnabled = true
                     termsSpinner.isEnabled = true
@@ -235,24 +226,18 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun createTermInfoWorkRequest(term: String, periodic: Boolean): WorkRequest {
-        val termInfoWorkInputData = Data.Builder().run {
-            putString(Constants.WORKER_TERM_INFO_ID_KEY, userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_ID_KEY, ""))
-            putString(Constants.WORKER_TERM_INFO_PW_KEY, userDataSharPref.getString(Constants.SHAR_PREF_USER_DATA_PW_KEY, ""))
-            putString(Constants.WORKER_TERM_INFO_TERM_KEY, term)
-            putBoolean(Constants.WORKER_TERM_INFO_PERIODIC_KEY, periodic)
-            build()
-        }
-
-        val workRequestBuilder =
-            if (periodic) {
-                PeriodicWorkRequestBuilder<TermInfoWorker>(20, TimeUnit.MINUTES).
-                    setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            } else {
-                OneTimeWorkRequestBuilder<TermInfoWorker>()
+    private fun updateSyncStatusText() {
+        if (isSyncEnabled(this)) {
+            syncStatusTextView.apply {
+                text = getString(R.string.MAIN_SYNC_STATUS_TEXT).format("enabled")
+                setTextColor(Color.parseColor("#00AA00"))
             }
-
-        return workRequestBuilder.setInputData(termInfoWorkInputData).build()
+        } else {
+            syncStatusTextView.apply {
+                text = getString(R.string.MAIN_SYNC_STATUS_TEXT).format("disabled")
+                setTextColor(Color.parseColor("#AA0000"))
+            }
+        }
     }
 
 
@@ -281,9 +266,7 @@ class MainActivity : AppCompatActivity() {
      */
     private inner class NewGradesReceiver: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
-            if ((termsSpinner.selectedItem as String) == getLastTerm()) {
-                displayTermInfo()
-            }
+            displayTermInfo()
         }
     }
 

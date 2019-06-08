@@ -36,8 +36,8 @@ class TermInfoWorker(appContext: Context, workerParams: WorkerParameters)
         val term: String = inputData.getString(Constants.WORKER_TERM_INFO_TERM_KEY) ?: return Result.failure()
         val periodic: Boolean = inputData.getBoolean(Constants.WORKER_TERM_INFO_PERIODIC_KEY, false)
 
-        val oldTermInfo = applicationContext.getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE).
-            getString(term, "")
+        val oldTermInfo = applicationContext.getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE)
+            .getString(term, "")
 
         // Periodic version is meant to run after initial term information is retrieved
         if (periodic && oldTermInfo.isNullOrEmpty()) return Result.success()
@@ -64,12 +64,14 @@ class TermInfoWorker(appContext: Context, workerParams: WorkerParameters)
                     "$termInfo${Constants.COURSE_GRADE_PAIR_DELIMITER}XPA${Constants.COURSE_GRADE_DELIMITER}$xpa" +
                             "${Constants.COURSE_GRADE_PAIR_DELIMITER}LAST_CHECK${Constants.COURSE_GRADE_DELIMITER}$currentDateTime"
 
-                applicationContext.getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE).
-                    edit().putString(term, termInfo).apply()
+                applicationContext.getSharedPreferences(Constants.SHAR_PREF_TERMS_DATA, Context.MODE_PRIVATE)
+                    .edit().putString(term, termInfo).apply()
 
-                if (periodic && notifyNewGrades(oldTermInfo as String, termInfo)) {
-                    LocalBroadcastManager.getInstance(applicationContext).
-                        sendBroadcast(Intent(Constants.INTENT_NEW_GRADES))
+                // If this worker is periodic and new grades are discovered,
+                // a notification is issued and an Intent is sent to Main activity.
+                if (periodic && !isStopped && notifyNewGrades(oldTermInfo as String, termInfo)) {
+                        LocalBroadcastManager.getInstance(applicationContext)
+                            .sendBroadcast(Intent(Constants.INTENT_NEW_GRADES))
                 }
 
                 termInfoResultSuccessful = true

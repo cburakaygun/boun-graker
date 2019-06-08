@@ -17,19 +17,23 @@
 
         <service
                 android:name=".services.LoginService"
-                android:exported="false" />
+                android:exported="false"/>
 
-        <activity android:name=".MainActivity">
+        <activity
+                android:name=".MainActivity"
+                android:launchMode="singleTop"
+                android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
-                android:name=".LoginActivity"
-                android:launchMode="singleTask"/>
-
+                android:name=".LoginActivity"/>
+        <activity
+                android:name=".SettingsActivity"
+                android:label="@string/ACTIVITY_SETTINGS_NAME"
+                android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>
