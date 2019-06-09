@@ -21,7 +21,7 @@ To update the term information manually, you can tap the `UPDATE NOW` button.
 - An information of last (successful) check date/time is displayed for each term.
 - Background sync service works for only the last term. It is executed at about every 20 minutes. 
 (Note that this interval is not strict. Android system determines when to run this service based on some conditions 
-such as battery status, device sleep status, etc.)
+such as network connection, battery status, device sleep status, etc.)
 
 
 ***
