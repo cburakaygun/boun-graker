@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.WorkInfo
@@ -228,14 +229,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateSyncStatusText() {
         if (isSyncEnabled(this)) {
-            syncStatusTextView.apply {
-                text = getString(R.string.MAIN_SYNC_STATUS_TEXT).format("enabled")
-                setTextColor(Color.parseColor("#00AA00"))
+            syncStatusTextView.let {
+                it.text = getString(R.string.MAIN_SYNC_STATUS_TEXT).format("enabled")
+                it.setTextColor(ContextCompat.getColor(this, R.color.syncStatusEnabled))
             }
         } else {
-            syncStatusTextView.apply {
-                text = getString(R.string.MAIN_SYNC_STATUS_TEXT).format("disabled")
-                setTextColor(Color.parseColor("#AA0000"))
+            syncStatusTextView.let {
+                it.text = getString(R.string.MAIN_SYNC_STATUS_TEXT).format("disabled")
+                it.setTextColor(ContextCompat.getColor(this, R.color.syncStatusDisabled))
             }
         }
     }
