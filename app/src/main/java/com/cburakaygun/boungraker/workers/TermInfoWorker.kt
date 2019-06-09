@@ -42,7 +42,6 @@ class TermInfoWorker(appContext: Context, workerParams: WorkerParameters)
         // Periodic version is meant to run after initial term information is retrieved
         if (periodic && oldTermInfo.isNullOrEmpty()) return Result.success()
 
-
         var termInfoResultSuccessful = false
 
         val loginCookies: HashMap<String, String>? = bounLogin(stuID, stuPW)
@@ -69,9 +68,10 @@ class TermInfoWorker(appContext: Context, workerParams: WorkerParameters)
 
                 // If this worker is periodic and new grades are discovered,
                 // a notification is issued and an Intent is sent to Main activity.
-                if (periodic && !isStopped && notifyNewGrades(oldTermInfo as String, termInfo)) {
-                        LocalBroadcastManager.getInstance(applicationContext)
-                            .sendBroadcast(Intent(Constants.INTENT_NEW_GRADES))
+                if (periodic && !isStopped) {
+                    notifyNewGrades(oldTermInfo as String, termInfo)
+                    LocalBroadcastManager.getInstance(applicationContext)
+                        .sendBroadcast(Intent(Constants.INTENT_NEW_GRADES))
                 }
 
                 termInfoResultSuccessful = true
@@ -88,11 +88,11 @@ class TermInfoWorker(appContext: Context, workerParams: WorkerParameters)
      * @param newInfo Term info string after the worker run
      * @return True, if new grades are found. False, otherwise.
      */
-    private fun notifyNewGrades(oldInfo: String, newInfo: String): Boolean {
+    private fun notifyNewGrades(oldInfo: String, newInfo: String) {
         val oldCourseGradeInfo = oldInfo.split("${Constants.COURSE_GRADE_PAIR_DELIMITER}XPA")[0]
         val newCourseGradeInfo = newInfo.split("${Constants.COURSE_GRADE_PAIR_DELIMITER}XPA")[0]
 
-        if (oldCourseGradeInfo == newCourseGradeInfo) return false
+        if (oldCourseGradeInfo == newCourseGradeInfo) return
 
         val oldCourseGradePairs = oldCourseGradeInfo.split(Constants.COURSE_GRADE_PAIR_DELIMITER)
         val newCourseGradePairs = newCourseGradeInfo.split(Constants.COURSE_GRADE_PAIR_DELIMITER)
@@ -118,11 +118,7 @@ class TermInfoWorker(appContext: Context, workerParams: WorkerParameters)
                 applicationContext.getString(R.string.NOTIFICATION_NEW_GRADES_TITLE),
                 notificationText
             )
-
-            return true
         }
-
-        return false
     }
 
 }
