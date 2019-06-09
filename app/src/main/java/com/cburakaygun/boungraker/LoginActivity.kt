@@ -8,7 +8,6 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.preference.PreferenceManager
 import com.cburakaygun.boungraker.helpers.Constants
 import com.cburakaygun.boungraker.helpers.isNetworkConnected
 import com.cburakaygun.boungraker.helpers.isSyncEnabled

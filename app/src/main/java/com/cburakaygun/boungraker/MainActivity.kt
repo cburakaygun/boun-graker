@@ -3,7 +3,6 @@ package com.cburakaygun.boungraker
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.*
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
